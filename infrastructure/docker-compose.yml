@@ -21,7 +21,7 @@ services:
   # 2. BACKEND (Spring Boot)
   # ===============================
   backend:
-    image: archive-backend:v1
+    image: barretodevops/archive-backend:latest
     container_name: archive-api
     restart: on-failure
     ports:
@@ -59,7 +59,7 @@ services:
   # 3. FRONTEND (Next.js)
   # ===============================
   frontend:
-    image: archive-frontend:v1
+    image: barretodevops/archive-frontend:latest
     container_name: archive-web
     restart: on-failure
     ports:

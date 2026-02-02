@@ -44,7 +44,6 @@ jobs:
   # --- TRABAJO 2: CONSTRUIR FRONTEND ---
   build-and-push-frontend:
     runs-on: ubuntu-latest
-    # Solo corre si hubo cambios en frontend (o si es manual)
     if: |
       github.event_name == 'workflow_dispatch' ||
       contains(github.event.head_commit.modified, 'frontend/')
@@ -68,4 +67,11 @@ jobs:
           context: ./frontend
           file: ./frontend/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/archive-frontend:latest, ${{ secrets.DOCKER_USERNAME }}/archive-frontend:v1
+          tags: ${{ secrets.DOCKER_USERNAME }}/archive-frontend:latest
+          # AQUI ESTA LA MAGIA: Inyectamos las variables al construir
+          build-args: |
+            NEXT_PUBLIC_MP_PUBLIC_KEY=${{ secrets.NEXT_PUBLIC_MP_PUBLIC_KEY }}
+            NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
+            NEXT_PUBLIC_GOOGLE_CLIENT_ID=${{ secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID }}
+            NEXT_PUBLIC_UBIGEO_API_URL=https://raw.githubusercontent.com/ernestorbar/peru-json/master/peru.json
+            NEXT_PUBLIC_CACHE_KEY=ubigeo_data_cache_v1
