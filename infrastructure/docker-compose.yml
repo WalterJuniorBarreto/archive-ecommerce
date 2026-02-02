@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  # ===============================
+  # 1. BASE DE DATOS (PostgreSQL)
+  # ===============================
+  db:
+    image: postgres:15-alpine
+    container_name: archive-db
+    restart: always
+    environment:
+      POSTGRES_USER: geek_user        # Tu usuario
+      POSTGRES_PASSWORD: "12345678"   # Tu password (como string para evitar errores numéricos)
+      POSTGRES_DB: ecommerce_sb       # Tu base de datos
+    ports:
+      - "5432:5432" # Exponemos el puerto estandar de Postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # Persistencia de datos
+
+  # ===============================
+  # 2. BACKEND (Spring Boot)
+  # ===============================
+  backend:
+    image: archive-backend:v1
+    container_name: archive-api
+    restart: on-failure
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      # --- CONEXIÓN BASE DE DATOS ---
+      # OJO: Aquí cambiamos 'localhost' por 'db'
+      DB_URL: jdbc:postgresql://db:5432/ecommerce_sb
+      DB_USERNAME: geek_user
+      DB_PASSWORD: "12345678"
+      
+      # --- SEGURIDAD ---
+      JWT_SECRET_KEY: U3VwZXJTZWNyZXRLZXlGb3JHZWVrU3RvcmVQcm9qZWN0VGhhdElzVmVyeUxvbmdBbmRTZWN1cmUxMjM0NTY3OA==
+      GOOGLE_CLIENT_ID: 421953722744-khiv0q6sr7fkkmelnmqpcf2resg5au9m.apps.googleusercontent.com
+      
+      # --- CLOUDINARY ---
+      CLOUDINARY_CLOUD_NAME: dsp3zjbs9
+      CLOUDINARY_API_KEY: 381561217988913
+      CLOUDINARY_API_SECRET: ALQyGQvQ8sXuDXI0jUgZ3wEhJSU
+      
+      # --- EMAIL ---
+      MAIL_USERNAME: archiveperuofficial@gmail.com
+      MAIL_PASSWORD: zizowmezbzcklblh
+      
+      # --- MERCADO PAGO ---
+      MP_ACCESS_TOKEN: APP_USR-8519037752023901-112918-4828c8824c93172fde57e361e3ad0164-1611852352
+      
+      # --- CONFIGURACIÓN WEB ---
+      CORS_ALLOWED_ORIGINS: http://localhost:3000
+      APPLICATION_FRONTEND_URL: http://localhost:3000
+
+  # ===============================
+  # 3. FRONTEND (Next.js)
+  # ===============================
+  frontend:
+    image: archive-frontend:v1
+    container_name: archive-web
+    restart: on-failure
+    ports:
+      - "3000:3000"
+    environment:
+      # Esta URL es para que el navegador sepa dónde está la API
+      NEXT_PUBLIC_API_URL: http://localhost:8080
+
+volumes:
+  postgres_data: # Volumen nombrado para guardar los datos de PostgreSQL
